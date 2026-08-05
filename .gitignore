@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Envs / IDE
+.env
+.idea/
+.vscode/
+*.swp
+
+# Experiment / local output (regenerate with scripts)
+wandb/
+figures/
+analysis_figures/
+**/output.log
+*.out
+*.png
+*.pdf
+
+# Data (not part of code release)
+data/eval_datasets/*.csv
+data/train_text_path
+data/test_text_path
+data/val_text_path
+data/mid_hard_negative_pool*.csv
+**/train_text_path
+**/test_text_path
+**/val_text_path
+no_findings_analysis/*.csv
+no_findings_analysis/*.txt
+no_findings_analysis/*.png
+
+# Checkpoints
+trained_models/runs/**/model/
+trained_models/runs/**/*.pt
+trained_models/runs/**/*.bin
+trained_models/runs/**/*.safetensors
+trained_models/runs/**/*.gguf
+models/

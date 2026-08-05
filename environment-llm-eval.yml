@@ -1,0 +1,28 @@
+# Conda environment for local LLM inconsistency baselines (vLLM + eval scripts).
+#
+# Create:
+#   conda env create -f environment-llm-eval.yml
+# Activate:
+#   conda activate Rad_Report_Error_Detection-LLM
+#
+# Notes:
+# - vLLM pulls PyTorch with CUDA wheels via pip. You need NVIDIA drivers on the host.
+# - First model download uses Hugging Face Hub (~/.cache/huggingface).
+# - For gated models (e.g. Llama), run: huggingface-cli login
+
+name: Rad_Report_Error_Detection-LLM
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+      - pip:
+      # Inference server (OpenAI-compatible API on localhost)
+      - vllm>=0.6.0
+      # Confusion matrix plots for LLM eval reports
+      - matplotlib>=3.8.0
+      # Model downloads / auth for gated weights
+      - huggingface_hub>=0.24.0
+      - hf_transfer>=0.1.8
+      # Optional: faster HF downloads (recommended for 70B weights)
+      # Set HF_HUB_ENABLE_HF_TRANSFER=1 in your shell profile.

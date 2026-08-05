@@ -1,0 +1,15 @@
+[
+  {
+    "slug": "qwen3-32b-gguf",
+    "model": "bartowski/Qwen_Qwen3-32B-GGUF:Q6_K",
+    "gguf_file": "Qwen_Qwen3-32B-Q6_K.gguf",
+    "tokenizer": "Qwen/Qwen3-32B",
+    "hf_config_path": "Qwen/Qwen3-32B",
+    "load_format": "gguf",
+    "quantization": null,
+    "dtype": "float16",
+    "enabled": true,
+    "enforce_eager": false,
+    "max_model_len": 1024
+  }
+]

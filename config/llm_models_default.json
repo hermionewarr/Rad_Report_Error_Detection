@@ -1,0 +1,85 @@
+[
+  {
+    "slug": "qwen3-32b-gguf",
+    "model": "bartowski/Qwen_Qwen3-32B-GGUF:Q6_K",
+    "gguf_file": "Qwen_Qwen3-32B-Q6_K.gguf",
+    "tokenizer": "Qwen/Qwen3-32B",
+    "hf_config_path": "Qwen/Qwen3-32B",
+    "load_format": "gguf",
+    "quantization": null,
+    "dtype": "float16",
+    "enabled": true,
+    "enforce_eager": false,
+    "max_model_len": 4096,
+    "_comment": "vLLM repo:quant_type syntax; ~27GB Q6_K. Download: huggingface-cli download bartowski/Qwen_Qwen3-32B-GGUF --include Qwen_Qwen3-32B-Q6_K.gguf"
+  },
+  {
+    "slug": "gemma-3-27b-gguf",
+    "model": "models/gemma-3-27b-gguf-textonly/google_gemma-3-27b-it-Q6_K.gguf",
+    "gguf_file": "google_gemma-3-27b-it-Q6_K.gguf",
+    "tokenizer": "google/gemma-3-27b-it",
+    "hf_config_path": "config/gemma-3-27b-text",
+    "load_format": "gguf",
+    "quantization": null,
+    "dtype": "float32",
+    "enabled": false,
+    "enforce_eager": false,
+    "max_model_len": 4096,
+    "_comment": "Text-only GGUF for radiology eval (no vision/mmproj). vLLM 0.21 cannot load multimodal Gemma3 GGUF here (vision weight map fails). Use local gguf dir WITHOUT mmproj + text-only hf_config_path. Gated: huggingface-cli login. Download: huggingface-cli download bartowski/google_gemma-3-27b-it-GGUF --include google_gemma-3-27b-it-Q6_K.gguf. Symlink into models/gemma-3-27b-gguf-textonly/ if needed."
+  },
+  {
+    "slug": "qwen2.5-72b",
+    "model": "Qwen/Qwen2.5-72B-Instruct-AWQ",
+    "quantization": "awq",
+    "dtype": "float16",
+    "enabled": false,
+    "trust_remote_code": true,
+    "enforce_eager": true,
+    "max_model_len": 1024,
+    "_comment": "72B AWQ on ~49GB: disabled after switching to Qwen3-32B GGUF; re-enable if needed"
+  },
+  {
+    "slug": "llama-3.3-70b",
+    "model": "casperhansen/llama-3.3-70b-instruct-awq",
+    "quantization": "awq",
+    "dtype": "float16",
+    "enabled": false,
+    "trust_remote_code": true,
+    "enforce_eager": true,
+    "max_model_len": 4096,
+    "_comment": "AWQ INT4 (~40GB). Gated (llama3.3 license): huggingface-cli login + accept Meta license. Download: huggingface-cli download casperhansen/llama-3.3-70b-instruct-awq"
+  },
+  {
+    "slug": "llama-3.1-8b",
+    "model": "hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4",
+    "quantization": "awq",
+    "dtype": "float16",
+    "trust_remote_code": true,
+    "enforce_eager": true,
+    "max_model_len": 1024,
+    "enabled": false,
+    "_comment": "Smaller Llama option (INT4 AWQ) for lower VRAM; keep disabled until selected for a run."
+  },
+  {
+    "slug": "llama-3.1-8b-meta",
+    "model": "meta-llama/Meta-Llama-3.1-8B-Instruct",
+    "quantization": null,
+    "dtype": "float16",
+    "trust_remote_code": true,
+    "enforce_eager": true,
+    "max_model_len": 1024,
+    "enabled": false,
+    "_comment": "Official Meta BF16/FP16 weights (gated). Higher VRAM than AWQ; enable when you want baseline non-quant."
+  },
+  {
+    "slug": "mistral-small-3.1",
+    "model": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+    "quantization": null,
+    "dtype": "float16",
+    "trust_remote_code": true,
+    "enforce_eager": true,
+    "max_model_len": 1024,
+    "enabled": false,
+    "_comment": "Mistral Small 3.1 instruct model; keep disabled until selected."
+  }
+]

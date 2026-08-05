@@ -1,0 +1,39 @@
+# Conda environment for BERT training / eval / plotting (the PTCT3-style stack).
+#
+# Create:
+#   conda env create -f environment.yml
+# Activate:
+#   conda activate Rad_Report_Error_Detection
+#
+# For local LLM baselines (vLLM), use the separate file instead:
+#   conda env create -f environment-llm-eval.yml
+#
+# Notes:
+# - Installs PyTorch with CUDA via the official pytorch pip index.
+#   Change the cu* wheel if your driver needs a different CUDA runtime.
+# - Training also needs a GPU driver on the host; CPU-only is fine for light tests.
+# - Pin ranges match packages used in development (PTCT3); not a bit-identical export.
+
+name: Rad_Report_Error_Detection
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      # Core ML
+      - torch>=2.2.0
+      - transformers>=4.48.0,<5
+      - tokenizers>=0.21.0
+      - datasets>=3.0.0
+      - accelerate>=1.0.0
+      - safetensors>=0.5.0
+      - sentencepiece>=0.2.0
+      # Data / eval
+      - numpy>=1.26,<2.1
+      - pandas>=2.2.0
+      - scikit-learn>=1.6.0
+      - matplotlib>=3.10.0
+      - tqdm>=4.67.0
+      # Experiment logging (optional but used by train scripts)
+      - wandb>=0.19.0
