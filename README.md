@@ -55,6 +55,13 @@ python scripts/run_llm_baselines.py --help
 
 LLM notes: [`LLM_EVAL_SETUP.md`](LLM_EVAL_SETUP.md).
 
+## Training Domain-specific BERT models
+
+1. run src/bert_model.py to do the MLM pretraining
+2. run src/bert_model_cls_classification.py to pretrain the CLS token
+3. run src/bert_inconsistency_detector.py (or src/bert_inconsistency_multiclass.py) to fine-tune on the error detection task of interest.
+
+   
 ## Imports
 
 ```python
