@@ -1,8 +1,6 @@
 # Rad_Report_Error_Detection
 
-Standalone code for findings–conclusion inconsistency detection in radiology
-reports (BERT + local LLM baselines). **Method / supplementary code only** —
-no clinical data, figures, or trained weights.
+Code for paper Error Detection for PET/CT Radiology Reports: Domain-Specific vs Large Language Models. 
 
 ## Layout
 
