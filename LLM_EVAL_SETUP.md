@@ -24,7 +24,7 @@ vLLM installs **PyTorch + CUDA** wheels automatically via pip.
 
 ### Host requirements
 
-- NVIDIA driver + GPU (you have RTX 6000 / A6000 — suitable for 70B with AWQ)
+- NVIDIA driver + GPU (authors used RTX 6000 / A6000 — suitable for 70B with AWQ)
 - Enough disk for model weights (~40–80 GB per 70B quantized checkpoint)
 - For **gated** models (Llama): `huggingface-cli login` once
 
@@ -60,18 +60,18 @@ Suite-wide GPU: `--gpu 1` on the runner command line.
 
 Recommended eval CSV for the paper:
 
-`data/eval_datasets/hard_negative_eval_v4_single_swap.csv`
+`data/eval_datasets/hard_negative_eval_v6_single_swap.csv`
 
-Use **`--mode hard`** for the full v4 hard-negative suite (laterality, site, severity, NF vs disease, **cross_pair_mismatch**, plus consistent). On v4 CSVs, `hard` and `all` load the same rows; use `cross_pair_full` or `lat` for ablations. LLM reports use **`eval_summary.txt`** (overall + per error type), not incidence buckets.
+Use **`--mode hard`** for the full v6 hard-negative suite (laterality, site, severity, NF vs disease, **cross_pair_mismatch**, plus consistent). LLM reports use **`eval_summary.txt`**.
 
 ```bash
 cd /path/to/Rad_Report_Error_Detection
 conda activate Rad_Report_Error_Detection-LLM
 
 python scripts/run_llm_baselines.py \
-  --eval_csv data/eval_datasets/hard_negative_eval_v4_single_swap.csv \
+  --eval_csv data/eval_datasets/hard_negative_eval_v6_single_swap.csv \
   --mode hard \
-  --suite_name single-swap-hard-v1 \
+  --suite_name single-swap-errors \
   --manage_vllm \
   --gpu 1
 ```
