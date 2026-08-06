@@ -11,4 +11,4 @@ trained_models/runs/
 Each run typically contains `model/`, `results/`, `plots/`, `logs/`.
 
 **Not shipped by default** (size + licensing): model weights and full prediction dumps.
-Point scripts at local checkpoints, or copy paper runs from your private storage.
+Point scripts at local checkpoints, or recreate on your own dataset.
