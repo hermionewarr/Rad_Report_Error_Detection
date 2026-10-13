@@ -26,7 +26,10 @@ def _safe_auroc(y_true: np.ndarray, y_score: np.ndarray) -> float:
 
 try:
     from paths import (
+        DEFAULT_TEST_CSV,
         DEFAULT_TOKENIZER_PATH,
+        DEFAULT_TRAIN_CSV,
+        DEFAULT_VAL_CSV,
         NO_FINDINGS_DIR,
         RunLayout,
         checkpoint_path,
@@ -70,7 +73,10 @@ except ImportError:
     if str(_repo_root) not in sys.path:
         sys.path.append(str(_repo_root))
     from paths import (
+        DEFAULT_TEST_CSV,
         DEFAULT_TOKENIZER_PATH,
+        DEFAULT_TRAIN_CSV,
+        DEFAULT_VAL_CSV,
         NO_FINDINGS_DIR,
         RunLayout,
         checkpoint_path,
@@ -114,9 +120,9 @@ except ImportError:
 #MODEL_PATH = checkpoint_path("bert-contrastive_bs128_090526")
 MODEL_PATH = init_cls_checkpoint_path(DEFAULT_SEQ_LENGTH)
 TOKENIZER_PATH = DEFAULT_TOKENIZER_PATH
-TRAIN_FILE = data_path("train_text_path")
-VAL_FILE = data_path("val_text_path")
-TEST_FILE = data_path("test_text_path")
+TRAIN_FILE = str(DEFAULT_TRAIN_CSV)
+VAL_FILE = str(DEFAULT_VAL_CSV)
+TEST_FILE = str(DEFAULT_TEST_CSV)
 NF_LABELS_CSV = str(NO_FINDINGS_DIR / "no_findings_labels.csv")
 from src.nf_v_dis_human_eval import (  # noqa: E402
     NF_HUMAN_REVIEW_CSV,

@@ -14,7 +14,10 @@ from transformers import AutoTokenizer, BertModel
 
 try:
     from paths import (
+        DEFAULT_TEST_CSV,
         DEFAULT_TOKENIZER_PATH,
+        DEFAULT_TRAIN_CSV,
+        DEFAULT_VAL_CSV,
         checkpoint_path,
         current_argv,
         data_path,
@@ -28,7 +31,10 @@ except ImportError:
     if str(_repo_root) not in sys.path:
         sys.path.append(str(_repo_root))
     from paths import (
+        DEFAULT_TEST_CSV,
         DEFAULT_TOKENIZER_PATH,
+        DEFAULT_TRAIN_CSV,
+        DEFAULT_VAL_CSV,
         checkpoint_path,
         current_argv,
         data_path,
@@ -39,9 +45,9 @@ except ImportError:
 #MODEL_PATH = checkpoint_path("bert-pretrained2")
 MODEL_PATH = checkpoint_path("bert-pretrained_mxlen_512", require_exists=False)
 TOKENIZER_PATH = DEFAULT_TOKENIZER_PATH
-TRAIN_FILE = data_path("train_text_path")
-TEST_FILE = data_path("test_text_path")
-VAL_FILE = data_path("val_text_path")
+TRAIN_FILE = str(DEFAULT_TRAIN_CSV)
+TEST_FILE = str(DEFAULT_TEST_CSV)
+VAL_FILE = str(DEFAULT_VAL_CSV)
 MAX_LENGTH = 512 #128
 BATCH_SIZE = 128
 EPOCHS = 20
@@ -284,6 +290,14 @@ def init_tokenizer(tokenizer_path):
     return tokenizer
 
 
+USE_WANDB = False
+
+
+def _log_wandb(payload, step=None):
+    if USE_WANDB:
+        wandb.log(payload, step=step)
+
+
 def init_wandb(run_name, contrastive_temperature=0.05):
     wandb.init(
         project="bert-contrastive",
@@ -299,10 +313,18 @@ def init_wandb(run_name, contrastive_temperature=0.05):
     )
 
 
-def train_and_eval(output_model_dir=None, contrastive_temperature=0.05, run_layout=None):
+def train_and_eval(
+    output_model_dir=None,
+    contrastive_temperature=0.05,
+    run_layout=None,
+    use_wandb: bool = False,
+):
+    global USE_WANDB
+    USE_WANDB = bool(use_wandb)
     if not output_model_dir:
         raise ValueError("output_model_dir is required for training")
-    init_wandb(Path(output_model_dir).parent.name, contrastive_temperature=contrastive_temperature)
+    if USE_WANDB:
+        init_wandb(Path(output_model_dir).parent.name, contrastive_temperature=contrastive_temperature)
     init_tokenizer(TOKENIZER_PATH)
     model = BertModel.from_pretrained(MODEL_PATH).to(DEVICE)
     model.resize_token_embeddings(len(tokenizer))
@@ -332,16 +354,16 @@ def train_and_eval(output_model_dir=None, contrastive_temperature=0.05, run_layo
             total_loss += loss.item()
 
             if global_step % 10 == 0:
-                wandb.log({"train/loss": loss.item()}, step=global_step)
+                _log_wandb({"train/loss": loss.item()}, step=global_step)
                 with torch.no_grad():
                     sims = torch.sum(
                         F.normalize(f_emb, dim=1) * F.normalize(c_emb, dim=1), dim=1
                     ).mean()
-                wandb.log({"train/positive_similarity": sims.item()}, step=global_step)
+                _log_wandb({"train/positive_similarity": sims.item()}, step=global_step)
             global_step += 1
 
         avg_loss = total_loss / len(dataloader)
-        wandb.log({"train/epoch_loss": avg_loss}, step=global_step)
+        _log_wandb({"train/epoch_loss": avg_loss}, step=global_step)
         print(f"Epoch {epoch + 1} | Loss: {avg_loss:.4f}")
 
         model.eval()
@@ -354,7 +376,7 @@ def train_and_eval(output_model_dir=None, contrastive_temperature=0.05, run_layo
             c_emb = model(**c_inputs).last_hidden_state[:, 0, :]
             eval_loss = contrastive_loss(f_emb, c_emb, temperature=contrastive_temperature)
         metrics = compute_retrieval_metrics(f_emb, c_emb)
-        wandb.log(
+        _log_wandb(
             {
                 "eval/loss": eval_loss.item(),
                 "eval/top_1": metrics["top_1"],
@@ -383,7 +405,7 @@ def train_and_eval(output_model_dir=None, contrastive_temperature=0.05, run_layo
                 fixed_cm_path=str(plots / "contrastive_binary_confusion_matrix.png"),
                 tuned_cm_path=str(plots / "contrastive_val_tuned_confusion_matrix.png"),
             )
-            wandb.log(
+            _log_wandb(
                 {
                     "binary_eval/fixed_zero_acc": fixed_zero_metrics["acc"],
                     "binary_eval/fixed_zero_f1_inconsistent": fixed_zero_metrics["f1_inconsistent"],
@@ -424,6 +446,11 @@ if __name__ == "__main__":
     parser.add_argument("--eval_model_path", type=str, default=None)
     parser.add_argument("--run_name", type=str, default=None)
     parser.add_argument("--eval_tokenizer_path", type=str, default=TOKENIZER_PATH)
+    parser.add_argument(
+        "--use_wandb",
+        action="store_true",
+        help="Log this run to Weights & Biases. Off unless this flag is set.",
+    )
     args = parser.parse_args()
     args.eval_model_path = args.eval_model_path or checkpoint_path(DEFAULT_CHECKPOINT)
 
@@ -451,4 +478,5 @@ if __name__ == "__main__":
             output_model_dir=str(train_layout.model),
             contrastive_temperature=args.contrastive_temperature,
             run_layout=train_layout,
+            use_wandb=args.use_wandb,
         )

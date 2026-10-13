@@ -38,7 +38,7 @@
 set -u
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CONDA_ENV="${CONDA_ENV:-PTCT3}"
+CONDA_ENV="${CONDA_ENV:-Rad_Report_Error_Detection}"
 MLM_SCRIPT="${REPO_ROOT}/src/bert_model.py"
 CLS_SCRIPT="${REPO_ROOT}/src/bert_cls_classification.py"
 RUNS_DIR="${REPO_ROOT}/trained_models/runs/pretraining"

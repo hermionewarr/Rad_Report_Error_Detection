@@ -38,9 +38,39 @@ def _env_path(var: str, default: Path) -> Path:
     return default
 
 
+def _first_data_file(env_var: str, candidates: Sequence[Path]) -> Path:
+    """Env override, else the first candidate that exists, else the last candidate."""
+    raw = os.environ.get(env_var)
+    if raw:
+        return Path(raw).expanduser().resolve()
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate.resolve()
+    return candidates[-1]
+
+
 # ---- User-supplied data (override with env or place files under data/) ----
+# Shipped stand-in. Real exports replace these (data/reports.csv, data/*_text_path).
+DUMMY_DATA_DIR = DATA_DIR / "dummy"
 # REPORTS_CSV: master CSV with Findings, Conclusion, and optional split column.
-DEFAULT_REPORTS_CSV = _env_path("REPORTS_CSV", DATA_DIR / "reports.csv")
+DEFAULT_REPORTS_CSV = _first_data_file(
+    "REPORTS_CSV",
+    (DATA_DIR / "reports.csv", DUMMY_DATA_DIR / "reports.csv"),
+)
+# Split tables used by CLS / contrastive / inconsistency training.
+# Same columns as the master reports export.
+DEFAULT_TRAIN_CSV = _first_data_file(
+    "TRAIN_CSV",
+    (DATA_DIR / "train_text_path", DUMMY_DATA_DIR / "train.csv"),
+)
+DEFAULT_VAL_CSV = _first_data_file(
+    "VAL_CSV",
+    (DATA_DIR / "val_text_path", DUMMY_DATA_DIR / "val.csv"),
+)
+DEFAULT_TEST_CSV = _first_data_file(
+    "TEST_CSV",
+    (DATA_DIR / "test_text_path", DUMMY_DATA_DIR / "test.csv"),
+)
 # TOKENIZER_PATH: HuggingFace tokenizer directory (or name loadable by AutoTokenizer).
 DEFAULT_TOKENIZER_PATH = str(_env_path("TOKENIZER_PATH", DATA_DIR / "tokenizer"))
 # CHECKPOINTS_ROOT: optional extra tree to search for pretrained weights.

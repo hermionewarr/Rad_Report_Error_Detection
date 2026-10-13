@@ -13,7 +13,10 @@ from transformers import AutoTokenizer, BertModel
 try:
     from bert_architectures import default_cls_batch_size, print_training_config
     from paths import (
+        DEFAULT_TEST_CSV,
         DEFAULT_TOKENIZER_PATH,
+        DEFAULT_TRAIN_CSV,
+        DEFAULT_VAL_CSV,
         checkpoint_path,
         current_argv,
         data_path,
@@ -31,7 +34,10 @@ except ImportError:
         sys.path.append(str(_repo_root))
     from bert_architectures import default_cls_batch_size, print_training_config
     from paths import (
+        DEFAULT_TEST_CSV,
         DEFAULT_TOKENIZER_PATH,
+        DEFAULT_TRAIN_CSV,
+        DEFAULT_VAL_CSV,
         checkpoint_path,
         current_argv,
         data_path,
@@ -45,9 +51,9 @@ except ImportError:
 MAX_LENGTH = 600 #768 #512 #256 #128
 MODEL_PATH = str(init_pretrain_model_dir(MAX_LENGTH))
 TOKENIZER_PATH = DEFAULT_TOKENIZER_PATH
-TRAIN_FILE = data_path("train_text_path")
-TEST_FILE = data_path("test_text_path")
-VAL_FILE = data_path("val_text_path")
+TRAIN_FILE = str(DEFAULT_TRAIN_CSV)
+TEST_FILE = str(DEFAULT_TEST_CSV)
+VAL_FILE = str(DEFAULT_VAL_CSV)
 
 BATCH_SIZE = 128
 EPOCHS = 20
@@ -324,6 +330,14 @@ def init_tokenizer(tokenizer_path):
     return tokenizer
 
 
+USE_WANDB = False
+
+
+def _log_wandb(payload, step=None):
+    if USE_WANDB:
+        wandb.log(payload, step=step)
+
+
 def init_wandb(run_name, negative_prob=0.5, model_config=None):
     cfg = {
         "model": MODEL_PATH,
@@ -355,7 +369,10 @@ def train_and_eval(
     negative_sampler="batch",
     run_layout=None,
     model_size: str = "small",
+    use_wandb: bool = False,
 ):
+    global USE_WANDB
+    USE_WANDB = bool(use_wandb)
     if not output_model_dir:
         raise ValueError("output_model_dir is required for training")
     init_tokenizer(TOKENIZER_PATH)
@@ -382,11 +399,12 @@ def train_and_eval(
         output_dir=output_model_dir,
         config=model.config,
     )
-    init_wandb(
-        Path(output_model_dir).parent.name,
-        negative_prob=single_cls_negative_prob,
-        model_config=model.config,
-    )
+    if USE_WANDB:
+        init_wandb(
+            Path(output_model_dir).parent.name,
+            negative_prob=single_cls_negative_prob,
+            model_config=model.config,
+        )
 
     dataset = FindingsConclusionDataset(TRAIN_FILE)
     test_dataset = FindingsConclusionDataset(TEST_FILE)
@@ -428,14 +446,14 @@ def train_and_eval(
             if global_step % 10 == 0:
                 preds = (torch.sigmoid(logits) >= 0.5).float()
                 batch_acc = (preds == labels).float().mean().item()
-                wandb.log(
+                _log_wandb(
                     {"train/loss": loss.item(), "train/batch_acc": batch_acc},
                     step=global_step,
                 )
             global_step += 1
 
         avg_loss = total_loss / len(dataloader)
-        wandb.log({"train/epoch_loss": avg_loss}, step=global_step)
+        _log_wandb({"train/epoch_loss": avg_loss}, step=global_step)
         print(f"Epoch {epoch + 1} | Loss: {avg_loss:.4f}")
 
         model.eval()
@@ -447,7 +465,7 @@ def train_and_eval(
             logits = single_cls_logits(model, classifier_head, inputs)
             eval_loss = F.binary_cross_entropy_with_logits(logits, labels)
             eval_acc = ((torch.sigmoid(logits) >= 0.5).float() == labels).float().mean()
-        wandb.log(
+        _log_wandb(
             {"eval/loss": eval_loss.item(), "eval/acc": eval_acc.item(), "epoch": epoch},
             step=global_step,
         )
@@ -465,7 +483,7 @@ def train_and_eval(
                 fixed_cm_path=str(plots / "cls_binary_confusion_matrix.png"),
                 tuned_cm_path=str(plots / "cls_val_tuned_confusion_matrix.png"),
             )
-            wandb.log(
+            _log_wandb(
                 {
                     "binary_eval/fixed_zero_acc": fixed_zero_metrics["acc"],
                     "binary_eval/fixed_zero_f1_inconsistent": fixed_zero_metrics["f1_inconsistent"],
@@ -536,6 +554,11 @@ if __name__ == "__main__":
     )
     parser.add_argument("--epochs", type=int, default=None)
     parser.add_argument("--batch_size", type=int, default=None)
+    parser.add_argument(
+        "--use_wandb",
+        action="store_true",
+        help="Log this run to Weights & Biases. Off unless this flag is set.",
+    )
     args = parser.parse_args()
     cls_batch_size = args.batch_size or default_cls_batch_size(args.model_size)
     if args.scratch_init and args.init_checkpoint:
@@ -577,4 +600,5 @@ if __name__ == "__main__":
             single_cls_negative_prob=args.single_cls_negative_prob,
             run_layout=train_layout,
             model_size=args.model_size,
+            use_wandb=args.use_wandb,
         )

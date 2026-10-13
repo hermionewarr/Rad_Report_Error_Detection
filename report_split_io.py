@@ -85,7 +85,7 @@ def write_report_split_csv(path: str, rows) -> None:
 def _looks_like_report_csv(first_line: str) -> bool:
     if not first_line:
         return False
-    columns = next(csv.reader([first_line]))
+    columns = {name.strip().lower() for name in next(csv.reader([first_line]))}
     return TEXT_COLUMN in columns or {"findings", "conclusion"}.issubset(columns)
 
 
@@ -104,25 +104,21 @@ def load_report_records(path: str) -> List[ReportRecord]:
         if _looks_like_report_csv(first_line):
             reader = csv.DictReader(f)
             for row in reader:
-                text = _clean_value(row.get(TEXT_COLUMN, ""))
-                findings = _clean_value(row.get("findings", ""))
-                conclusion = _clean_value(row.get("conclusion", ""))
-                if (not findings or not conclusion) and text:
-                    findings, conclusion = _parse_text_pair(text)
-                if not text:
-                    text = format_report_text(findings, conclusion)
-                if findings and conclusion:
-                    records.append(
-                        ReportRecord(
-                            patient_id=_clean_value(row.get("patient_id", "")),
-                            accession_number=_clean_value(row.get("accession_number", "")),
-                            study_date=_clean_value(row.get("study_date", "")),
-                            source_row=_clean_value(row.get("source_row", "")),
+                record = build_report_record(row, source_row=row.get("source_row", ""))
+                if not (record.findings and record.conclusion):
+                    findings, conclusion = _parse_text_pair(record.text or row.get(TEXT_COLUMN, ""))
+                    if findings and conclusion:
+                        record = ReportRecord(
+                            patient_id=record.patient_id,
+                            accession_number=record.accession_number,
+                            study_date=record.study_date,
+                            source_row=record.source_row,
                             findings=findings,
                             conclusion=conclusion,
-                            text=text,
+                            text=format_report_text(findings, conclusion),
                         )
-                    )
+                if record.findings and record.conclusion:
+                    records.append(record)
             return records
 
         for line_number, line in enumerate(f):

@@ -30,7 +30,7 @@
 set -u
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-CONDA_ENV="PTCT3"
+CONDA_ENV="${CONDA_ENV:-Rad_Report_Error_Detection}"
 BINARY_SCRIPT="${REPO_ROOT}/src/bert_inconsistency_detector.py"
 PRETRAIN_RUNS_DIR="${REPO_ROOT}/trained_models/runs/pretraining"
 
@@ -132,11 +132,18 @@ BINARY_COMMON_ARGS=(
   --swap_instances single
   --severity_jitter_prob "${SEVERITY_JITTER_PROB}"
   --error_type_weights "${ERROR_WEIGHTS}"
-  --val_hard_eval_csv "${VAL_CSV}"
-  --eval_csv_hard "${EVAL_CSV}"
-  --use_wandb
   --epochs 20
 )
+if [[ -f "${VAL_CSV}" ]]; then
+  BINARY_COMMON_ARGS+=(--val_hard_eval_csv "${VAL_CSV}")
+else
+  echo "Val benchmark CSV not found (${VAL_CSV}); validation uses the val split."
+fi
+if [[ -f "${EVAL_CSV}" ]]; then
+  BINARY_COMMON_ARGS+=(--eval_csv_hard "${EVAL_CSV}")
+else
+  echo "Post-train benchmark CSV not found (${EVAL_CSV}); skipping that eval."
+fi
 
 echo "BERT inconsistency ablation sweep"
 echo "  seq_length=${SEQ_LENGTH}"

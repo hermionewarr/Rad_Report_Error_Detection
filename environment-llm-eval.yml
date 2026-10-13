@@ -16,7 +16,7 @@ channels:
 dependencies:
   - python=3.11
   - pip
-      - pip:
+  - pip:
       # Inference server (OpenAI-compatible API on localhost)
       - vllm>=0.6.0
       # Confusion matrix plots for LLM eval reports

@@ -29,18 +29,22 @@ export PYTHONPATH=$PWD
 
 ## Point at your data
 
-Everything resolves under this repo’s `data/` by default. Override with env vars
-(defined in `paths.py`):
+A synthetic stand-in is already at `data/dummy/` (`reports.csv` plus `train.csv`,
+`val.csv`, `test.csv`) with the same columns as a real reports export. Training
+uses that until you point at your own files.
 
 ```bash
-export REPORTS_CSV=/path/to/your/reports.csv     # Findings, Conclusion, optional split
+export REPORTS_CSV=/path/to/your/reports.csv     # Findings, Conclusion, split, plus the other export columns
+export TRAIN_CSV=/path/to/train.csv              # optional; else data/train_text_path, else data/dummy/train.csv
+export VAL_CSV=/path/to/val.csv
+export TEST_CSV=/path/to/test.csv
 export TOKENIZER_PATH=/path/to/hf_tokenizer_dir
 export CHECKPOINTS_ROOT=/path/to/extra_weights    # optional
 ```
 
 Or drop files at:
 
-- `data/reports.csv`
+- `data/reports.csv` (used instead of `data/dummy/reports.csv` when present)
 - `data/tokenizer/`
 - `data/train_text_path`, `data/val_text_path`, `data/test_text_path`
 - `data/eval_datasets/*.csv`

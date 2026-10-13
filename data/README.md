@@ -4,9 +4,9 @@ Put your (private) inputs here. Nothing clinical is shipped with this repo.
 
 | Path / env | Role |
 |------------|------|
-| `reports.csv` or `REPORTS_CSV` | Master reports (columns: `Findings`, `Conclusion`, optional `split`) |
-| `train_text_path`, `val_text_path`, `test_text_path` | Split files for training (written by MLM prep or by manual input) |
+| `dummy/reports.csv` (default) or `reports.csv` / `REPORTS_CSV` | Master reports. Dummy rows use the real export columns |
+| `dummy/{train,val,test}.csv` or `*_text_path` / `TRAIN_CSV` `VAL_CSV` `TEST_CSV` | Split files for CLS, contrastive, and inconsistency training |
 | `tokenizer/` or `TOKENIZER_PATH` | HuggingFace tokenizer directory |
-| `eval_datasets/*.csv` |binary / multiclass eval sets (build with `build_eval_datasets.py`) |
+| `eval_datasets/*.csv` | Hard-negative / multiclass eval sets (build with `build_eval_datasets.py`) |
 
 See `eval_datasets/README.md` for eval generation.

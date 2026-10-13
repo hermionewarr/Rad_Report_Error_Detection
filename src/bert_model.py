@@ -135,9 +135,16 @@ def train_mlm(
     scheduler_total_epochs: int | None = None,
 ):
     train_data, test_data, val_data = load_report_splits()
+    # Split files are written for later stages. Weights update on the train split only.
+    # The test split is scored during training and is not used to pick checkpoints.
     write_report_split_csv("train_text_path", train_data)
     write_report_split_csv("test_text_path", test_data)
     write_report_split_csv("val_text_path", val_data)
+    print(
+        f"MLM trains on the train split ({len(train_data)} rows); "
+        f"eval on the test split ({len(test_data)} rows).",
+        flush=True,
+    )
 
     dataset = load_dataset(
         "csv",
@@ -204,6 +211,7 @@ def train_mlm(
         eval_steps=500,
         fp16=fp16,
         bf16=bf16,
+        report_to="none",
     )
     trainer = MlmTrainer(
         scheduler_total_epochs=scheduler_total_epochs,
@@ -224,12 +232,10 @@ def run_post_training_eval(
     model_dir: str,
     tokenizer,
     tokenized_dataset,
-    train_data,
     test_data,
     training_args,
     data_collator,
 ):
-    texts = [build_report_record(row).text for _, row in train_data.iterrows()]
     test_texts = [build_report_record(row).text for _, row in test_data.iterrows()]
 
     eval_model = BertForMaskedLM.from_pretrained(model_dir)
@@ -294,7 +300,7 @@ def run_post_training_eval(
         closest_idx = np.argsort(distances)[:5]
         print(f"\nCluster {i} representative texts:")
         for idx in closest_idx:
-            print("-", texts[idx])
+            print("-", test_texts[idx])
     print(np.bincount(kmeans.labels_))
 
     pca = PCA(n_components=2)
@@ -318,7 +324,7 @@ def run_post_training_eval(
     print("query:\n", query)
     for i, s in zip(indices, scores):
         print("Score:", s.item())
-        print(texts[i])
+        print(test_texts[i])
         print("-" * 50)
 
     findings_texts = test_data["Findings"].fillna("").astype(str).str.strip().tolist()
@@ -341,13 +347,21 @@ def run_post_training_eval(
                 correct += 1
         return correct / len(findings_emb_local)
 
+    n_pairs = len(findings_emb)
     for top_k in (1, 5, 10, 100):
+        if top_k > n_pairs:
+            continue
         acc = alignment_accuracy(findings_emb, conclusion_emb, top_k=top_k)
         print(f"Top-{top_k} accuracy:", acc)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="BERT MLM pretraining on radiology reports.")
+    parser = argparse.ArgumentParser(
+        description=(
+            "BERT MLM pretraining on the training split. "
+            "The test split is evaluated only and is not used to select checkpoints."
+        )
+    )
     parser.add_argument("--seq_length", type=int, default=600, choices=(512, 600, 768))
     parser.add_argument(
         "--model_size",
@@ -413,7 +427,7 @@ def main():
     batch_size = args.batch_size or default_mlm_batch_size(args.model_size)
     Path(output_model_dir).mkdir(parents=True, exist_ok=True)
 
-    tokenizer, tokenized_dataset, train_data, test_data, training_args, data_collator = train_mlm(
+    tokenizer, tokenized_dataset, _train_data, test_data, training_args, data_collator = train_mlm(
         seq_length=args.seq_length,
         model_size=args.model_size,
         output_model_dir=output_model_dir,
@@ -432,7 +446,6 @@ def main():
             model_dir=output_model_dir,
             tokenizer=tokenizer,
             tokenized_dataset=tokenized_dataset,
-            train_data=train_data,
             test_data=test_data,
             training_args=training_args,
             data_collator=data_collator,
