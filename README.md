@@ -1,6 +1,6 @@
 # Rad_Report_Error_Detection
 
-Code for paper Error Detection for PET/CT Radiology Reports: Domain-Specific vs Large Language Models. 
+Code for paper: [Error Detection for PET/CT Radiology Reports: Domain-Specific vs Large Language Models](https://arxiv.org/pdf/2608.30021)
 
 ## Layout
 
