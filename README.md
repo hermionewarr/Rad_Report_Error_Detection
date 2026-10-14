@@ -84,4 +84,13 @@ Note we used our own pre-trained tokenisers [hermionegrace/radiology-bpe-tokeniz
 
 From the paper: [Specialised or Generic? Tokenization Choices for Radiology Language Models](https://arxiv.org/pdf/2508.09952)
 
+Use just like any other huggingface tokeniser:
 
+```python
+from transformers import AutoTokenizer
+
+tokenizer = AutoTokenizer.from_pretrained(
+    "hermionewarr/radiology-bpe-tokenizers",
+    subfolder="transformer_tokeniser_bpe10987ouhfc_train_no_digit",
+)
+```
