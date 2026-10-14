@@ -65,6 +65,7 @@ LLM notes: [`LLM_EVAL_SETUP.md`](LLM_EVAL_SETUP.md).
 2. run src/bert_model_cls_classification.py to pretrain the CLS token
 3. run src/bert_inconsistency_detector.py (or src/bert_inconsistency_multiclass.py) to fine-tune on the error detection task of interest.
 
+In scripts, there are bash files to run these sequentially.
    
 ## Imports
 
