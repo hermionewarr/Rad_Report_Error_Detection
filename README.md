@@ -2,6 +2,9 @@
 
 Code for paper: [Error Detection for PET/CT Radiology Reports: Domain-Specific vs Large Language Models](https://arxiv.org/pdf/2608.30021)
 
+<img width="750" height="500" alt="Screenshot 2026-10-14 at 11 21 48" src="https://github.com/user-attachments/assets/0ea896da-8bb9-4adc-91bf-5dd2af033076" />
+
+
 ## Layout
 
 ```
