@@ -77,3 +77,11 @@ from paths import data_path, eval_data_path, DEFAULT_REPORTS_CSV, DEFAULT_TOKENI
 from src.predictions_eval import write_eval_artifacts
 from bert_architectures import bert_mlm_config
 ```
+
+## Tokenisers
+
+Note we used our own pre-trained tokenisers [hermionegrace/radiology-bpe-tokenizers](https://huggingface.co/hermionegrace/radiology-bpe-tokenizers)
+
+From the paper: [Specialised or Generic? Tokenization Choices for Radiology Language Models](https://arxiv.org/pdf/2508.09952)
+
+
